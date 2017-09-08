@@ -142,13 +142,32 @@ def handle_calculate_IK(req):
         wcy = py - T_total * Matrix([[0],[0],[d7],[0]])[1]
         wcz = pz - T_total * Matrix([[0],[0],[d7],[0]])[2]
 	    #
-        ## z = d1 + a2 * cos(q2) - a3 * cos(q2 + q3) + d4 * sin(q2 + q3)
+        ## z = d1 + a2 * cos(q2) - a3 * cos(q2 + q3) - d4 * sin(q2 + q3)
         ## l = a1 + a2 * sin(q2) - a3 * sin(q2 + q3) + d4 * cos(q2 + q3)
         ## x = l * cos(q1)
         ## y = l * sin(q1)
         ##
+        ### some trigonometric equations
+        ### sin(a-b) = sin(a) * sin(b) - cos(a) * sin(b)
+        ### cos(a-b) = cos(a) * sin(b) + sin(a) * cos(b)
+        ###
+        ##
         ## q1 = atan2(wcy, wcx)
         ## l = wcx / cos(q1)
+        ##
+        ## A = z - d1
+        ## B = a2
+        ## C = a3
+        ## D = d4
+        ## E = l - a1
+        ##
+        ## C * cos(q3) + D * sin(q3) = (B**2 + C**2 + D**2 - A**2 -E**2) / (2 * B)
+        ##
+        ## AA = D
+        ## BB = C
+        ## CC = (B**2 + C**2 + D**2 - A**2 -E**2) / (2 * B)
+        q3 = atan2(AA, BB) - atan2(sqrt(AA**2 + BB**2 - CC**2), CC) # there is another solution with "+"
+        #q3 = atan2(AA, BB) + atan2(sqrt(AA**2 + BB**2 - CC**2), CC)
         #
 	    #
             ###
