@@ -71,28 +71,28 @@ def test_code(test_case):
     theta6 = 0
     ### Your FK code here
         # Create symbols
-	q1, q2, q3, q4, q5, q6, q7 = symbols('q1:8')
+    q1, q2, q3, q4, q5, q6, q7 = symbols('q1:8')
     d1, d2, d3, d4, d5, d6, d7 = symbols('d1:8')
     a0, a1, a2, a3, a4, a5, a6 = symbols('a0:7')
     alpha0, alpha1, alpha2, alpha3, alpha4, alpha5, alpha6, = symbols('alpha0:7')
     #
 	#   
 	# Create Modified DH parameters
-    s = {alpha0:     0, a0:      0, d1:  0.75,
-         alpha1: -pi/2, a1:   0.35, d2:     0,  q2: q2-pi/2,
-         alpha2:     0, a2:   1.25, d3:     0,
-         alpha3: -pi/2, a3: -0.054, d4:  1.50,
-         alpha4: -pi/2, a4:      0, d5:     0,
-         alpha5: -pi/2, a5:      0, d6:     0,
-         alpha6:     0, a6:      0, d7: 0.303,  q7: 0 }
+    s = {alpha0:      0, a0:      0, d1:  0.75,  q1:       q1,
+         alpha1: -pi/2., a1:   0.35, d2:     0,  q2:-pi/2.+q2,
+         alpha2:      0, a2:   1.25, d3:     0,  q3:	   q3,
+         alpha3: -pi/2., a3: -0.054, d4:  1.50,  q4:       q4,
+         alpha4:  pi/2., a4:      0, d5:     0,  q5:       q5,
+         alpha5: -pi/2., a5:      0, d6:     0,  q6:       q6,
+         alpha6:      0, a6:      0, d7: 0.303,  q7:        0}
     #
 	#
 	# Create individual transformation matrices
     def TF_Matrix(alpha, a, d, q):
-        TF = Matrix([[          cos(q),           -sin(q),            0,               a],
-                   [ sin(q)*cos(alpha), cos(q)*cos(alpha),  -sin(alpha),  -sin(alpha1)*d],
-                   [ sin(q)*sin(alpha), cos(q)*sin(alpha),   cos(alpha),   cos(alpha1)*d],
-                   [                 0,                 0,            0,               1]])
+        TF = Matrix([[          cos(q),           -sin(q),            0,              a],
+                   [ sin(q)*cos(alpha), cos(q)*cos(alpha),  -sin(alpha),  -sin(alpha)*d],
+                   [ sin(q)*sin(alpha), cos(q)*sin(alpha),   cos(alpha),   cos(alpha)*d],
+                   [                 0,                 0,            0,              1]])
         return TF
     T0_1 = TF_Matrix(alpha0, a0, d1, q1).subs(s)
     T1_2 = TF_Matrix(alpha1, a1, d2, q2).subs(s)
@@ -100,10 +100,11 @@ def test_code(test_case):
     T3_4 = TF_Matrix(alpha3, a3, d4, q4).subs(s)
     T4_5 = TF_Matrix(alpha4, a4, d5, q5).subs(s)
     T5_6 = TF_Matrix(alpha5, a5, d6, q6).subs(s)
-    T6_E = TF_Matrix(alpha6, a6, d7, q7).subs(s)
+    T6_EE = TF_Matrix(alpha6, a6, d7, q7).subs(s)
 
-    T0_E = T0_1 * T1_2 * T2_3 * T3_4 * T4_5 * T5_6 * T6_E
+    T0_EE = T0_1 * T1_2 * T2_3 * T3_4 * T4_5 * T5_6 * T6_EE
 
+    
     # Extract end-effector position and orientation from request
     # px, py, pz = end-effector position
     # roll, pitch, yaw = end-effectro orientation
@@ -140,33 +141,33 @@ def test_code(test_case):
     EE = Matrix([[px],
                  [py],
                  [pz]])
-
-    WC = EE - d7 & ROT_EE[:,2] # 0.303
+    
+    WC = EE - 0.303 * ROT_EE[:,2] # d7 = 0.303
     #
 	# Calculate joint angles using Geometric IK method
     theta1 = atan2(WC[1], WC[0])
 
-    side_a = d4
-    side_b = sqrt((sqrt(wcx**2 + wcy**2) - a1)**2 + (wcz - d1)**2)
-    side_c = a2
-
+    side_a = 1.50 # d4.subs(s)
+    side_b = sqrt((sqrt(WC[0]**2 + WC[1]**2) - 0.35)**2 + (WC[2] - 0.75)**2)
+    side_c = 1.25 # a2.subs(s)
+    # print "sid_s =",side_a, side_b, side_c
     angle_a = acos((side_b**2 + side_c**2 - side_a**2)/(2 * side_b * side_c))
-    angle_b = acos((side_a**2 + side_a**2 - side_b**2)/(2 * side_a * side_c))
+    angle_b = acos((side_a**2 + side_c**2 - side_b**2)/(2 * side_a * side_c))
     angle_c = acos((side_a**2 + side_b**2 - side_c**2)/(2 * side_a * side_b))
-        
-    theta2 = pi/2 - angle_a - atan2(wcz - d1, sqrt(wcx**2 + wcy**2) - a1)
+    # print "angles =", angle_a, angle_b, angle_c
+    theta2 = pi/2 - angle_a - atan2(WC[2] - 0.75, sqrt(WC[0]**2 + WC[1]**2) - 0.35)
     theta3 = pi/2 - (angle_b + 0.036)
 
+    # print "thetas =", theta1, theta2, theta3
     R0_3 = T0_1[0:3, 0:3] * T1_2[0:3, 0:3] * T2_3[0:3, 0:3]
     R0_3 = R0_3.evalf(subs = {q1: theta1, q2: theta2, q3: theta3})
 
     R3_6 = R0_3.inv("LU") * ROT_EE
-
+    
     # Eular angles from rotation matrix
     theta4 = atan2(R3_6[2,2], -R3_6[0,2])
-    theta5 = atan2(sqrt(R3_6[0,2]**2 + R3_6[2,2]**2), R3_6[1,2])
+    theta5 = atan2(sqrt(R3_6[0,2]*R3_6[0,2] + R3_6[2,2]*R3_6[2,2]), R3_6[1,2])
     theta6 = atan2(-R3_6[1,1], R3_6[1,0])
-
     ## 
     ########################################################################################
     
@@ -175,13 +176,17 @@ def test_code(test_case):
     ## as the input and output the position of your end effector as your_ee = [x,y,z]
 
     ## (OPTIONAL) YOUR CODE HERE!
+    FK = T0_EE.evalf(subs={q1: theta1, q2: theta2, q3: theta3, q4: theta4, q5: theta5, q6: theta6})
 
     ## End your code input for forward kinematics here!
     ########################################################################################
 
     ## For error analysis please set the following variables of your WC location and EE location in the format of [x,y,z]
-    your_wc = [1,1,1] # <--- Load your calculated WC values in this array
-    your_ee = [1,1,1] # <--- Load your calculated end effector value from your forward kinematics
+    # your_wc = [1,1,1] # <--- Load your calculated WC values in this array
+    # your_ee = [1,1,1] # <--- Load your calculated end effector value from your forward kinematics
+    your_wc = [WC[0], WC[1], WC[2]]
+    #print 'WC=',WC
+    your_ee = [FK[0,3], FK[1,3], FK[2,3]]
     ########################################################################################
 
     ## Error analysis
