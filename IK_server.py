@@ -170,6 +170,26 @@ def handle_calculate_IK(req):
         #q3 = atan2(AA, BB) + atan2(sqrt(AA**2 + BB**2 - CC**2), CC)
         #
 	    #
+        side_a = d4
+        side_b = sqrt((sqrt(wcx**2 + wcy**2) - a1)**2 + (wcz - d1)**2)
+        side_c = a2
+
+        angle_a = acos((side_b**2 + side_c**2 - side_a**2)/(2 * side_b * side_c))
+        angle_b = acos((side_a**2 + side_a**2 - side_b**2)/(2 * side_a * side_c))
+        angle_c = acos((side_a**2 + side_b**2 - side_c**2)/(2 * side_a * side_b))
+        
+        theta2 = pi/2 - angle_a - atan2(wcz - d1, sqrt(wcx**2 + wcy**2) - a1)
+        theta3 = pi/2 - (angle_b + 0.036)
+
+        R0_3 = T0_1[0:3, 0:3] * T1_2[0:3, 0:3] * T2_3[0:3, 0:3]
+        R0_3 = R0_3.evalf(subs = {q1: theta1, q2: theta2, q3: theta3})
+
+        R3_6 = R0_3.inv("LU") * ROT_EE
+
+        theta4 = atan2(R3_6[2,2], -R3_6[0,2])
+        theta5 = atan2(sqrt(R3_6[0,2]**2 + R3_6[2,2]**2), R3_6[1,2])
+        theta6 = atan2(-R3_6[1,1], R3_6[1,0])
+        
             ###
 		
             # Populate response for the IK request
