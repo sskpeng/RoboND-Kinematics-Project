@@ -103,7 +103,6 @@ def test_code(test_case):
     T6_EE = TF_Matrix(alpha6, a6, d7, q7).subs(s)
 
     T0_EE = T0_1 * T1_2 * T2_3 * T3_4 * T4_5 * T5_6 * T6_EE
-
     
     # Extract end-effector position and orientation from request
     # px, py, pz = end-effector position
@@ -124,9 +123,11 @@ def test_code(test_case):
     ROT_x = Matrix([[       1,            0,         0],
                     [       0,       cos(r),   -sin(r)],
                     [       0,       sin(r),    cos(r)]]) # roll
+
     ROT_y = Matrix([[  cos(p),            0,    sin(p)],
                     [       0,            1,         0],
                     [ -sin(p),            0,    cos(p)]]) # pitch
+
     ROT_z = Matrix([[  cos(y),      -sin(y),         0],
                     [  sin(y),       cos(y),         0],
                     [       0,            0,         1]]) # yaw
@@ -147,7 +148,7 @@ def test_code(test_case):
 	# Calculate joint angles using Geometric IK method
     theta1 = atan2(WC[1], WC[0])
 
-    side_a = 1.50 # d4.subs(s)
+    side_a = 1.501 # d4.subs(s)
     side_b = sqrt((sqrt(WC[0]**2 + WC[1]**2) - 0.35)**2 + (WC[2] - 0.75)**2)
     side_c = 1.25 # a2.subs(s)
     # print "sid_s =",side_a, side_b, side_c
@@ -177,7 +178,7 @@ def test_code(test_case):
 
     ## (OPTIONAL) YOUR CODE HERE!
     FK = T0_EE.evalf(subs={q1: theta1, q2: theta2, q3: theta3, q4: theta4, q5: theta5, q6: theta6})
-
+    #FK3 = T0_3.evalf(subs={q1: theta1, q2: theta2, q3: theta3, q4: theta4, q5: theta5, q6: theta6})
     ## End your code input for forward kinematics here!
     ########################################################################################
 
@@ -186,6 +187,7 @@ def test_code(test_case):
     # your_ee = [1,1,1] # <--- Load your calculated end effector value from your forward kinematics
     your_wc = [WC[0], WC[1], WC[2]]
     #print 'WC=',WC
+    #print 'T03=',FK3[0,3], FK3[1,3], FK3[2,3]
     your_ee = [FK[0,3], FK[1,3], FK[2,3]]
     ########################################################################################
 
