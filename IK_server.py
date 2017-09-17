@@ -98,6 +98,7 @@ def handle_calculate_IK(req):
             px = req.poses[x].position.x
             py = req.poses[x].position.y
             pz = req.poses[x].position.z
+            POS_EE = Matrix([[px], [py], [pz]])
 
             (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(
                 [req.poses[x].orientation.x, req.poses[x].orientation.y,
@@ -114,8 +115,7 @@ def handle_calculate_IK(req):
 
             T0_6 = T0_1 * T1_2 * T2_3 * T3_4 * T4_5 * T5_6
             R0_6 = T0_6[0:3, 0:3]
-            WC = EE - ROT_EE * Matrix([[0],[0],[0.303]])
-            EE = Matrix([[px], [py], [pz]])
+            POS_WC = POS_EE - ROT_EE * Matrix([[0],[0],[0.303]])
 	    #
 	    #
 	    # Calculate joint angles using Geometric IK method
